@@ -1,4 +1,5 @@
 // Global Includes
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -7,18 +8,46 @@
 #include <OrderBookManager.hpp>
 
 /**
+ * @brief Display usage text for initializing the order book manager.
+ */
+void usage() {
+    std::cout << "./orderBook -s <SYMBOL_1> ... <SYMBOL_N> -p <PORT> (-l)" << std::endl;
+    std::cout << "-p | port for the order book manager (required)" << std::endl;
+    std::cout << "-s | exchange symbols for each order book (required)" << std::endl;
+    std::cout << "-l | console log flag (optional)" << std::endl;
+}
+
+/**
  * @brief Extracts all exchange symbols from the command line arg list.
  *
+ * @param argc - number of command line args
  * @param args - command line args
  * @return std::vector<std::string> - vector of exchange symbols
  */
-std::vector<std::string> extract_exchange_symbols(char* args[])
-{
+std::vector<std::string> extract_exchange_symbols(int argc, char* args[]) {
     std::vector<std::string> symbols;
 
-    // Find the -s
-    // Process all symbols until either -* character or end
-    // return symbols
+    // Find the position of the symbols
+    int s_pos = -1;
+    for (int i = 0; i < argc; i++) {
+        if (args[i] != nullptr && std::strcmp(args[i], "-s") == 0) {
+            s_pos = i;
+            break;
+        }
+    }
+
+    // No symbols position found
+    if (s_pos == -1) {
+        return symbols;
+    }
+
+    // Add all specified symbols symbols
+    for (int i = (s_pos + 1); i < argc; i++) {
+        if (args[i] == nullptr || args[i][0] == '-') {
+            break;
+        }
+        symbols.push_back(std::string(args[i]));
+    }
 
     return symbols;
 }
@@ -27,19 +56,49 @@ std::vector<std::string> extract_exchange_symbols(char* args[])
  * @brief Extracts the ports associated with the order book
  * book manager.
  *
+ * @param argc - number of command line args
  * @param args - command line args
- * @return std::vector<uint32_t> - vector of order book ports
+ * @return int32_t - port for the order book manager
  */
-std::vector<uint32_t> extract_port(char* args[])
-{
-    std::vector<uint32_t> ports;
+int32_t extract_port(int argc, char* args[]) {
+    int32_t port = -1;
 
-    return ports;
+    // Find the position of the port
+    int p_pos = -1;
+    for (int i = 0; i < argc; i++) {
+        if (args[i] != nullptr && std::strcmp(args[i], "-p") == 0) {
+            p_pos = i;
+            break;
+        }
+    }
+
+    // No port specified; No numerical value specified
+    if (p_pos == -1 || p_pos == (argc - 1)) {
+        return port;
+    }
+
+    port = std::stoi(args[p_pos+1]);
+    return port;
 }
 
-bool extract_console_log(char* args[])
-{
+/**
+ * @brief Extract the console logging flag.
+ *
+ * @param argc - number of command line args
+ * @param args - command line args
+ * @return true if -l present, otherwise false
+ */
+bool extract_console_log(int argc, char* args[]) {
+    bool logging = false;
 
+    for (int i = 0; i < argc; i++) {
+        if (args[i] != nullptr && std::strcmp(args[i], "-l") == 0) {
+            logging = true;
+            break;
+        }
+    }
+
+    return logging;
 }
 
 /**
@@ -58,20 +117,28 @@ bool extract_console_log(char* args[])
  */
 int main(int argc, char* argv[]) {
     // Process the command line arguements
-    std::vector<std::string> symbols = extract_exchange_symbols(argv);
-    std::vector<std::uint32_t> ports = extract_port(argv);
-    bool log = extract_console_log(argv);
+    std::vector<std::string> symbols = extract_exchange_symbols(argc, argv);
+    int32_t port = extract_port(argc, argv);
+    bool log = extract_console_log(argc, argv);
 
-    // Validate the command line args
+    // Validate port number
+    if (port <= -1) {
+        std::cout << "Must provide a port." << std::endl;
+        usage();
+        return 1;
+    }
+
+    // Validate the exchange symbols
+    if (symbols.size() == 0) {
+        std::cout << "No valid exchange symbols provided." << std::endl;
+        usage();
+        return 1;
+    }
 
     // Create the new order book manager
-    OrderBookManager obManager = OrderBookManager(
-        ports,
-        symbols,
-        log
-    );
+    OrderBookManager obManager = OrderBookManager(port, symbols, log);
 
-    // Run the order book manager
+    // Start listening for order requests
     obManager.startListener();
 
     return 0;

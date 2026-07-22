@@ -13,6 +13,13 @@ OrderBookManager::OrderBookManager (
 
     // Create the Order Book Map
     for (std::string symbol : symbols) {
+        logMessage(
+            LogLevel::INFO,
+            "OrderBookManager(): Creating order book (symbol=" + symbol + ")",
+            logging
+        );
+
+        // Add the order book
         orderBookMap.emplace(symbol, OrderBook(symbol));
     }
 }
@@ -33,9 +40,11 @@ OrderResponse OrderBookManager::handleMessage(std::string& buffer) {
 
 //#########################################################################
 void OrderBookManager::startListener() {
-    logMessage(LogLevel::INFO,
-               "startListener(): Starting OBM listener socket...",
-               logging);
+    logMessage(
+        LogLevel::INFO,
+        "startListener(): Starting OBM listener socket...",
+        logging
+    );
 
     createSocket();
 
@@ -44,15 +53,19 @@ void OrderBookManager::startListener() {
         SOCKET clientSocket = accept(obmSocket, nullptr, nullptr);
 
         if (clientSocket == INVALID_SOCKET) {
-            logMessage(LogLevel::ERR,
-                       "startListener(): failed to accept client connection...",
-                       logging);
+            logMessage(
+                LogLevel::ERR,
+                "startListener(): failed to accept client connection...",
+                logging
+            );
         }
         // Client socket connected
         else {
-            logMessage(LogLevel::INFO,
-                       "startListener(): Client socket connected.",
-                       logging);
+            logMessage(
+                LogLevel::INFO,
+                "startListener(): Client socket connected.",
+                logging
+            );
 
             // Read string from the socket
             char rcvBuffer[BUFFER_SIZE];
@@ -68,14 +81,18 @@ void OrderBookManager::startListener() {
                 std::string responseBuffer = serialize(response);
                 send(clientSocket, responseBuffer.data(), static_cast<int>(responseBuffer.size()), 0);
 
-                logMessage(LogLevel::INFO,
-                           "startListener(): Sent OrderResponse to client.",
-                           logging);
+                logMessage(
+                    LogLevel::INFO,
+                    "startListener(): Sent OrderResponse to client.",
+                    logging
+                );
             }
             else {
-                logMessage(LogLevel::INFO,
-                           "startListener(): Failed to read buffer from socket...",
-                           logging);
+                logMessage(
+                    LogLevel::INFO,
+                    "startListener(): Failed to read buffer from socket...",
+                    logging
+                );
             }
         }
     }
@@ -85,9 +102,11 @@ void OrderBookManager::startListener() {
 
 //#########################################################################
 int OrderBookManager::createSocket() {
-    logMessage(LogLevel::INFO,
-               "createSocket(): Creating OBM lsitener socket...",
-               logging);
+    logMessage(
+        LogLevel::INFO,
+        "createSocket(): Creating OBM lsitener socket...",
+        logging
+    );
 
     WSADATA wsaData;
     int wsResult;
@@ -113,10 +132,12 @@ int OrderBookManager::createSocket() {
     // Log socket information (IP address and port)
     std::string ipString = inet_ntoa(service.sin_addr);
 
-    logMessage(LogLevel::DEBUG,
-               "createSocket(): Binding OBM socket to IP=" + ipString +
-               ", Port=" + std::to_string(ntohs(service.sin_port)),
-               logging);
+    logMessage(
+        LogLevel::DEBUG,
+        "createSocket(): Binding OBM socket to IP=" + ipString +
+        ", Port=" + std::to_string(ntohs(service.sin_port)),
+        logging
+    );
 
     // Bind the OBM socket
     if (bind(obmSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
@@ -130,18 +151,22 @@ int OrderBookManager::createSocket() {
         throw std::runtime_error("[ERROR] createSocket(): OBM socket listen failed...");
     }
 
-    logMessage(LogLevel::INFO,
-               "createSocket(): OBM socket created. Listening on port=" + std::to_string(obmPort),
-               logging);
+    logMessage(
+        LogLevel::INFO,
+        "createSocket(): OBM socket created. Listening on port=" + std::to_string(obmPort),
+        logging
+    );
 
     return 1; // Socket created
 }
 
 //#########################################################################
 int OrderBookManager::cleanupSocket() {
-    logMessage(LogLevel::INFO,
-               "cleanupSocket(): Closing OBM lsitener socket...",
-               logging);
+    logMessage(
+        LogLevel::INFO,
+        "cleanupSocket(): Closing OBM lsitener socket...",
+        logging
+    );
 
     // Close the socket if there is an existing valid socket
     if (obmSocket != INVALID_SOCKET) {
@@ -149,16 +174,20 @@ int OrderBookManager::cleanupSocket() {
         WSACleanup();
         obmSocket = INVALID_SOCKET;
 
-        logMessage(LogLevel::INFO,
-               "cleanupSocket(): OBM socket closed.",
-               logging);
+        logMessage(
+            LogLevel::INFO,
+            "cleanupSocket(): OBM socket closed.",
+            logging
+        );
 
         return 1; // Socket closed
     }
 
-    logMessage(LogLevel::WARN,
-               "cleanupSocket(): Cannon close INVALID socket...",
-               logging);
+    logMessage(
+        LogLevel::WARN,
+        "cleanupSocket(): Cannon close INVALID socket...",
+        logging
+    );
 
     return -1; // No socket to close
 }
