@@ -7,6 +7,42 @@
 #include <OrderBookManager.hpp>
 
 /**
+ * @brief Extracts all exchange symbols from the command line arg list.
+ *
+ * @param args - command line args
+ * @return std::vector<std::string> - vector of exchange symbols
+ */
+std::vector<std::string> extract_exchange_symbols(char* args[])
+{
+    std::vector<std::string> symbols;
+
+    // Find the -s
+    // Process all symbols until either -* character or end
+    // return symbols
+
+    return symbols;
+}
+
+/**
+ * @brief Extracts the ports associated with the order book
+ * book manager.
+ *
+ * @param args - command line args
+ * @return std::vector<uint32_t> - vector of order book ports
+ */
+std::vector<uint32_t> extract_port(char* args[])
+{
+    std::vector<uint32_t> ports;
+
+    return ports;
+}
+
+bool extract_console_log(char* args[])
+{
+
+}
+
+/**
  * @brief Runs the order book simulation engine
  *
  * @param argc - number of command line arguements
@@ -21,16 +57,18 @@
  * @return int - engine status code
  */
 int main(int argc, char* argv[]) {
-    // Default parameters
-    int port = 8080;
-    bool consoleLog = true; // TEST => will be set to false
-    std::vector<std::string> exchangeSymbols = {"TEMP"}; // TEST => will be empty
+    // Process the command line arguements
+    std::vector<std::string> symbols = extract_exchange_symbols(argv);
+    std::vector<std::uint32_t> ports = extract_port(argv);
+    bool log = extract_console_log(argv);
+
+    // Validate the command line args
 
     // Create the new order book manager
     OrderBookManager obManager = OrderBookManager(
-        port,
-        exchangeSymbols,
-        consoleLog
+        ports,
+        symbols,
+        log
     );
 
     // Run the order book manager
